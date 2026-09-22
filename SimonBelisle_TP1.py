@@ -37,3 +37,5 @@ for i in range(len(data)):
 window = QMainWindow();
 window.show()
 sys.exit(app.exec())
+
+print("Bonjour world")
