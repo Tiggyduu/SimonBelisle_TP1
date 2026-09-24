@@ -1,5 +1,8 @@
+
 import sys
 import json
+
+
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -7,35 +10,45 @@ from PySide6.QtWidgets import (
     QTableWidgetItem
 )
 
-json_file = sys.argv[1]
-print("JSON FILE *****" + json_file)
+json_file = sys.argv[2]
+print(f"Loading data from {json_file}")
 
-try:
-    file = open(json_file)
-    data = json.load(file)
-    print(type(data))
-except:
-    print(f"Could not load data from {json_file}")
+def load_json_data(json_file):
+    try:
+        file = open(json_file, encoding="utf-8")
+        data = json.load(file)
+        print(type(data))
+        return data
+    except:
+        print(f"Could not load data from {json_file}")
+        return None
 
-for i in data:
-    for k in i.values():
-        print(f"    - {k}")
+
+data = load_json_data(json_file)
+
 app = QApplication([])
-
 tableau = QTableWidget()
-tableau.setRowCount(3)
-tableau.setColumnCount(3)
-tableau.setHorizontalHeaderLabels(["name", "price", "type"])
 
-# Fill the form
+if data:
+    # Créer le tableau à partir de "data" avec le nombre de keys et de values par keys
+    tableau.setHorizontalHeaderLabels(list(data[0].keys()))
+    tableau.setRowCount(len(data))
+    tableau.setColumnCount(len(data[0]))
+
+# Deux for loops pour remplir le talbeau horizontalement et verticalement.
+
 for i in range(len(data)):
     item = data[i]
-    tableau.setItem(i, 0, QTableWidgetItem(item["name"]))
-    tableau.setItem(i, 1, QTableWidgetItem(item["price"]))
-    tableau.setItem(i, 2, QTableWidgetItem(item["type"]))
+    keys = list(item.keys())
 
-window = QMainWindow();
+    # Pour chaque row, la 2e for loop remplit le tableau avec les values de chaque keys (ou l'inverse?).
+
+    for j in range(len(list(data[i].keys()))):
+
+        tableau.setItem(i, j, QTableWidgetItem(str(item[list(item.keys())[j]]))) 
+
+
+window = QMainWindow()
+window.setCentralWidget(tableau)
 window.show()
 sys.exit(app.exec())
-
-print("Bonjour world")
