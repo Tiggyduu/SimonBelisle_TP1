@@ -1,8 +1,7 @@
 
+from ctypes import resize
 import sys
 import json
-
-
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -10,8 +9,10 @@ from PySide6.QtWidgets import (
     QTableWidgetItem
 )
 
-json_file = sys.argv[2]
-print(f"Loading data from {json_file}")
+def get_json_file():
+    json_file = sys.argv[1]
+    print(f"Loading data from {json_file}")
+    return json_file
 
 def load_json_data(json_file):
     try:
@@ -24,16 +25,15 @@ def load_json_data(json_file):
         return None
 
 
+json_file = get_json_file()
 data = load_json_data(json_file)
 
+# Créer le tableau à partir de "data" avec le nombre de keys et de values par keys
 app = QApplication([])
 tableau = QTableWidget()
-
-if data:
-    # Créer le tableau à partir de "data" avec le nombre de keys et de values par keys
-    tableau.setHorizontalHeaderLabels(list(data[0].keys()))
-    tableau.setRowCount(len(data))
-    tableau.setColumnCount(len(data[0]))
+tableau.setHorizontalHeaderLabels(list(data[0].keys()))
+tableau.setRowCount(len(data))
+tableau.setColumnCount(len(data[0]))
 
 # Deux for loops pour remplir le talbeau horizontalement et verticalement.
 
