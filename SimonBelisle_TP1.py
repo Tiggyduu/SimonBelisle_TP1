@@ -2,15 +2,15 @@
 from ctypes import resize
 import sys
 import json
+import os # pour afficher le nom, la taille en mémoire et le nombre d’éléments du fichier.
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
-    QTableView,
     QTableWidget,
     QTableWidgetItem,
     QScrollArea,
     QLineEdit,
-    QCompleter,
+    QLabel,
     QVBoxLayout,
     QWidget,
 )
@@ -98,46 +98,32 @@ def sort(tableau):
 
     tableau.setSortingEnabled(True)
 
-class MainWindow(QMainWindow):
+def creating_window(window):
 
-    # Ceci crée la window dans laquelle les widgets apparaissent.
+    window.setWindowTitle("TP1")
 
-    def __init__(self):
+    # J'ai ajouté un scroller pour naviguer le tableau
 
-        super().__init__()
+    window.scroll_area = QScrollArea()
+    window.scroll_area.setWidgetResizable(True)
 
-        self.setWindowTitle("TP1")
-        self.resize(800, 600)
+    # Je crée un container et je le met dans le scroll area et tantôt je met mon tableau dans le scoll area
 
-        # J'ai ajouté un scroller
+    container = QWidget()
+    window.container_layout = QVBoxLayout()
+    container.setLayout(window.container_layout)
 
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
+    window.scroll_area.setWidget(container)
+    window.setCentralWidget(window.scroll_area)
 
-        # Je crée un container et je le met dans le scroll area et tantôt je met mon tableau dans le scoll area
 
-        container = QWidget()
-        self.container_layout = QVBoxLayout()
-        container.setLayout(self.container_layout)
+    def update_display(text):
 
-        self.scroll_area.setWidget(container)
-        self.setCentralWidget(self.scroll_area)
-
-        # Je crée une searchbar pour accéder au données du tableau plus facilement
-
-        self.searchbar = QLineEdit(placeholderText="Rechercher")
-        self.searchbar.textChanged.connect(self.update_display)
-        self.container_layout.addWidget(self.searchbar)
-
-        # Cette partie permet d'autocomplete la recherche
-
-    def update_display(self, text):
-
-        # "search est ce que ma loop cherche dans mon tableau"
+        # "search" est ce que ma loop cherche dans mon tableau"
 
         search = text.strip().casefold()
 
-        for row in range(self.tableau.rowCount()):
+        for row in range(window.tableau.rowCount()):
 
             # On assume que le contient_text est faux pas défaut
 
@@ -146,22 +132,37 @@ class MainWindow(QMainWindow):
             # Vérifier si au moins une column contient le texte
             # Une for loop qui vérifie chaque column et une autre qui véfifie chaque row
 
-            for col in range(self.tableau.columnCount()):
+            for col in range(window.tableau.columnCount()):
 
-                item = self.tableau.item(row, col)
+             item = window.tableau.item(row, col)
 
-                if item and search in item.text().casefold():
+             if item and search in item.text().casefold():
 
-                    contient_text = True
+                   contient_text = True
 
             # Cacher ou afficher la ligne selon le résultat
 
-            self.tableau.setRowHidden(row, not contient_text)
+            window.tableau.setRowHidden(row, not contient_text)
+
+    # Je crée une searchbar pour accéder au données du tableau plus facilement
+
+    window.searchbar = QLineEdit()
+    window.searchbar.setPlaceholderText("Rechercher")
+    window.searchbar.textChanged.connect(update_display)
+    window.container_layout.addWidget(window.searchbar)
+    
+        # Pour afficher les infos du fichier au milieu
+
+    window.status_label = QLabel()
+    window.status_label.setAlignment(Qt.AlignCenter)
+    window.statusBar().addWidget(window.status_label, 1)
 
 # Application
 
 app = QApplication([])
-window = MainWindow()
+window = QMainWindow()
+creating_window(window)
+
 
 # Afficher le tableau
 
@@ -175,9 +176,17 @@ window.tableau = tableau
 
 window.container_layout.addWidget(tableau)
 
-
 resize_to_fit_content(window, tableau)
 sort(tableau)
+
+# Afficher les infos du fichier json.
+
+json_file = get_json_file()
+nom_fichier = os.path.basename(json_file)
+taille = os.path.getsize(json_file)
+nombre_elements = tableau.rowCount()
+
+window.status_label.setText(f"Fichier : {nom_fichier} | Taille : {taille:.2f} Ko | Nombre d'éléments : {nombre_elements}")
 
 window.show()
 sys.exit(app.exec())
